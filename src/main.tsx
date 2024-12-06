@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import CreateTrip from './views/create-trip/index.tsx'
 import Header from './components/custom/Header.tsx'
+import { Toaster } from './components/ui/sonner.tsx'
 import {
   RouterProvider,
   createBrowserRouter,
@@ -26,6 +27,7 @@ const router = createBrowserRouter(routes)
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Header />
+    <Toaster />
     <RouterProvider router={router} />
   </StrictMode>
 )

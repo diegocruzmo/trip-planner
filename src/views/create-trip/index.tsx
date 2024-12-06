@@ -2,7 +2,12 @@ import { useLocations } from '@/hooks/useLocations'
 import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { SelectBudgetOptions, selectTravelesList } from '@/constants/options'
+import {
+  AI_PROMPT,
+  SelectBudgetOptions,
+  selectTravelesList
+} from '@/constants/options'
+import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -12,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { chatSession } from '@/utils/AiModal'
 
 const CreateTrip = () => {
   const { locations, loading, error, getLocations } = useLocations()
@@ -24,6 +30,11 @@ const CreateTrip = () => {
   })
 
   const handleInputChange = (name: string, value: string) => {
+    if (name === 'days' && (parseInt(value) > 5 || parseInt(value) < 1)) {
+      toast('Please type a value between 1 and 5')
+      return
+    }
+
     setFormData({
       ...formData,
       [name]: value
@@ -35,6 +46,28 @@ const CreateTrip = () => {
       getLocations(query)
     }
   }, [query, getLocations])
+
+  const onGenerateTrip = async () => {
+    if (
+      formData.budget !== '' &&
+      formData.days !== '' &&
+      formData.location !== '' &&
+      formData.travelers !== ''
+    ) {
+      const PROMPT = AI_PROMPT.replace('{location}', formData.location)
+        .replace('{days}', formData.days)
+        .replace('{travelers}', formData.travelers)
+        .replace('{budget}', formData.budget)
+        .replace('{days}', formData.days)
+
+      const result = await chatSession.sendMessage(PROMPT)
+      console.log(result?.response?.text())
+      return
+    }
+
+    toast('All fields are required!')
+    return
+  }
 
   return (
     <div className='px-5 sm:px-10 md:px-32 lg:px-56 xl:px-10 mt-10'>
@@ -131,7 +164,7 @@ const CreateTrip = () => {
       </div>
 
       <div className='my-5 flex justify-end items-center'>
-        <Button>Generate Trip</Button>
+        <Button onClick={onGenerateTrip}>Generate Trip</Button>
       </div>
       {/* <pre>{JSON.stringify(formData, null, 2)}</pre> */}
     </div>
